@@ -1,70 +1,100 @@
-# Getting Started with Create React App
+# DLS Component Library
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A reusable React component library built as part of the DLS Team take home assessment. The library starts with an accessible **Accordion** component.
 
-## Available Scripts
+## Quick Start
 
-In the project directory, you can run:
+```bash
+npm install
+npm start       # Dev server at http://localhost:3000
+npm test        # Run unit tests
+npm run build   # Production build
+npm run format  # Format source files with Prettier
+```
 
-### `npm start`
+## Task One — Configuration & Documentation
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+### Tech Stack & Choices
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+| Tool                                | Why                                                                                                                                                                             |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **React 19** (Create React App)     | Zero-config scaffold with built-in JSX, ESLint, and Webpack. Fast to get started — in production a library would use Rollup or Vite for proper tree-shaking and ESM/CJS output. |
+| **React Testing Library + Jest**    | Tests user-visible behaviour rather than implementation details, aligning with accessibility-first development. Ships with CRA.                                                 |
+| **@testing-library/user-event v14** | Simulates real pointer and keyboard interactions — more realistic than `fireEvent`. Required for the `userEvent.setup()` API used in the tests.                                 |
+| **Prettier**                        | Opinionated, automatic code formatting. Configured in `.prettierrc`, runnable via `npm run format`. Removes formatting debates from code review.                                |
+| **ESLint** (via `react-scripts`)    | CRA ships with `eslint-config-react-app` — catches common React errors and bad practices out of the box without extra configuration.                                            |
 
-### `npm test`
+### Project Structure
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+```
+src/
+  components/
+    Accordion/
+      Accordion.js      # Component implementation
+      Accordion.css     # Scoped styles
+      Accordion.test.js # Unit tests
+  App.js                # Demo / visual rendering
+```
 
-### `npm run build`
+## Task Two — Accordion Component
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### How it works
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+Each `AccordionPanel` manages its own open/closed state independently using `useState`. The parent `Accordion` component is purely presentational — it maps a `panels` array into `AccordionPanel` instances with no shared state.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+`useId` (React 18+) is used inside each `AccordionPanel` to generate stable, unique IDs for ARIA attributes, avoiding hydration mismatches in SSR contexts.
 
-### `npm run eject`
+### Usage
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+```jsx
+import Accordion from './components/Accordion/Accordion';
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+const panels = [
+  { title: 'Section 1', content: 'Body text or any JSX' },
+  { title: 'Section 2', content: <MyComponent /> },
+];
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+<Accordion panels={panels} />;
+```
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+### Props
 
-## Learn More
+| Prop     | Type                                           | Default | Description           |
+| -------- | ---------------------------------------------- | ------- | --------------------- |
+| `panels` | `Array<{ title: string, content: ReactNode }>` | `[]`    | The panels to render. |
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+### Accessibility
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+- Each trigger button has `aria-expanded` and `aria-controls` pointing to its content region.
+- Each content region has `role="region"` and `aria-labelledby` referencing its header button.
+- IDs are generated with `useId` — stable across renders and SSR-safe.
+- Fully keyboard-navigable via standard button focus and activation.
 
-### Code Splitting
+## Future Improvements
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+Given more time, the following enhancements would be prioritised:
 
-### Analyzing the Bundle Size
+### Developer Experience
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+- **ESLint custom config** — extend beyond CRA defaults with `eslint-plugin-jsx-a11y` for accessibility linting and `eslint-plugin-import` for import ordering.
+- **Husky + lint-staged** — pre-commit hooks to auto-run Prettier and ESLint on staged files, preventing formatting drift from reaching the repository.
+- **Commitlint** — enforce conventional commit messages to enable automated changelog generation.
+- **EditorConfig** — ensure consistent indentation and line endings across different editors and operating systems.
 
-### Making a Progressive Web App
+### Build & Packaging
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+- **Migrate to Vite or Rollup** — CRA is suitable for demos but a published component library needs a bundler that outputs ESM + CJS with proper tree-shaking.
+- **TypeScript** — static typing for better IDE support, self-documenting props, and compile-time safety.
+- **CSS Modules or CSS-in-JS** — scope styles to avoid class name collisions when the library is consumed in a larger application.
+- **Storybook** — visual component development, interactive documentation, and isolated testing environment.
 
-### Advanced Configuration
+### Testing
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+- **Code coverage thresholds** — enforce minimum coverage in CI via `--coverage --coverageThreshold`.
+- **Visual regression tests** — tools like Chromatic or Percy to catch unintended visual changes across component states.
+- **Axe integration** — automated accessibility audits via `jest-axe` running alongside unit tests.
 
-### Deployment
+### CI/CD
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+- **GitHub Actions** — automated Lint → Test → Build pipeline on every pull request.
+- **Automated publishing** — semantic-release for version bumps, changelog generation, and npm publishing on merge to main.

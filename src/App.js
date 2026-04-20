@@ -1,25 +1,31 @@
-import logo from './logo.svg';
+import React from 'react';
+import Accordion from './components/Accordion/Accordion';
 import './App.css';
 
-function App() {
+const panels = [
+  {
+    title: 'Panel One',
+    content: 'Content for panel one',
+  },
+  {
+    title: 'Panel Two',
+    content: 'Content for panel two',
+  },
+  {
+    title: 'Panel Three',
+    content: 'Content for panel three',
+  },
+];
+
+const App = () => {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="App" style={{ padding: '2rem', fontFamily: 'sans-serif' }}>
+      <section style={{ marginTop: '2rem' }}>
+        <h2>Accordion</h2>
+        <Accordion panels={panels} />
+      </section>
     </div>
   );
-}
+};
 
 export default App;
